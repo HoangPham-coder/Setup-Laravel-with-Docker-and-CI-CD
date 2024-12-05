@@ -13,6 +13,23 @@ jobs:
 
     runs-on: ubuntu-latest
 
+  services:
+    mysql:
+      image: mysql:5.7
+      env:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: laravel
+        MYSQL_USER: user
+        MYSQL_PASSWORD: password
+      options: >-
+        --health-cmd="mysqladmin ping --silent"
+        --health-interval=10s
+        --health-timeout=5s
+        --health-retries=3
+      ports:
+        - 3306:3306
+
+
     steps:
       # Bước 1: Clone mã nguồn
       - name: Checkout code
@@ -34,8 +51,12 @@ jobs:
       - name: Start MySQL container
         run: docker-compose up -d mysql
 
-      - name: Wait for MySQL to be ready
-        run: sleep 30
+      - name: Wait for MySQL
+          run: |
+            until nc -z -v -w30 127.0.0.1 3306; do
+              echo "Waiting for database connection..."
+              sleep 5
+            done
 
       # Bước 3: Cài đặt Composer dependencies
       - name: Install Composer dependencies
