@@ -51,12 +51,8 @@ jobs:
       - name: Start MySQL container
         run: docker-compose up -d mysql
 
-      - name: Wait for MySQL
-          run: |
-            until nc -z -v -w30 127.0.0.1 3306; do
-              echo "Waiting for database connection..."
-              sleep 5
-            done
+      - name: Wait for MySQL to be ready
+        run: sleep 30
 
       # Bước 3: Cài đặt Composer dependencies
       - name: Install Composer dependencies
