@@ -32,7 +32,7 @@ jobs:
 
       # Khởi động MySQL container
       - name: Start MySQL container
-        run: docker-compose up -d mysq
+        run: docker-compose up -d mysql
 
       - name: Wait for MySQL to be ready
         run: sleep 30
