@@ -36,6 +36,12 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
+      - name: Start MySQL service
+        run: docker-compose up -d mysql
+
+      - name: Wait for MySQL to be ready
+        run: sleep 30
+
       # Bước 6: Chạy migration và seeding database
       - name: Run migrations
         run: php artisan migrate --seed --force
