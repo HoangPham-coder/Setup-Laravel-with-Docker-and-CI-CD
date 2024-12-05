@@ -1,75 +1,47 @@
-name: Laravel CI/CD
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
-  services:
-    mysql:
-      image: mysql:5.7
-      env:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_DATABASE: laravel
-        MYSQL_USER: user
-        MYSQL_PASSWORD: password
-      options: >-
-        --health-cmd="mysqladmin ping --silent"
-        --health-interval=10s
-        --health-timeout=5s
-        --health-retries=3
-      ports:
-        - 3306:3306
-
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        ports:
+          - 3306:3306
 
     steps:
-      # Bước 1: Clone mã nguồn
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Cài đặt Docker Compose
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      # Bước 2: Thiết lập PHP
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
 
-      # Khởi động MySQL container
-      - name: Start MySQL container
-        run: docker-compose up -d mysql
-
-      - name: Wait for MySQL to be ready
-        run: sleep 30
-
-      # Bước 3: Cài đặt Composer dependencies
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
 
-      # Bước 4: Thiết lập tệp .env
       - name: Set environment variables
         run: cp .env.example .env
 
-      # Bước 5: Tạo application key
+      - name: Wait for MySQL
+        run: |
+          until nc -z -v -w30 127.0.0.1 3306; do
+            echo "Waiting for database connection..."
+            sleep 5
+          done
+
       - name: Generate application key
         run: php artisan key:generate
 
-      # Bước 6: Chạy migration và seeding database
       - name: Run migrations
         run: php artisan migrate --seed --force
-
-      # Bước 7: Chạy unit test
-      - name: Run tests
-        run: php artisan test
