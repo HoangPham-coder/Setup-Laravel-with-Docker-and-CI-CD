@@ -18,11 +18,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Cài đặt Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
       # Bước 2: Thiết lập PHP
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
+
+      # Khởi động MySQL container
+      - name: Start MySQL container
+        run: docker-compose up -d mysq
+
+      - name: Wait for MySQL to be ready
+        run: sleep 30
 
       # Bước 3: Cài đặt Composer dependencies
       - name: Install Composer dependencies
@@ -35,12 +48,6 @@ jobs:
       # Bước 5: Tạo application key
       - name: Generate application key
         run: php artisan key:generate
-
-      - name: Start MySQL service
-        run: docker-compose up -d mysql
-
-      - name: Wait for MySQL to be ready
-        run: sleep 30
 
       # Bước 6: Chạy migration và seeding database
       - name: Run migrations
